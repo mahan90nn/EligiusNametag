@@ -24,9 +24,9 @@ dependencies {
         exclude(group = "org.bukkit")
         exclude(group = "org.spigotmc")
     }
-    implementation("net.kyori:adventure-api:4.17.0")
-    implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("net.kyori:adventure-text-serializer-legacy:4.17.0")
+    implementation("net.kyori:adventure-api:4.25.0")
+    implementation("net.kyori:adventure-text-minimessage:4.25.0")
+    implementation("net.kyori:adventure-text-serializer-legacy:4.25.0")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation("redis.clients:jedis:5.1.2")

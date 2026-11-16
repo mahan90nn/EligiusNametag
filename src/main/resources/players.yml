@@ -7,3 +7,28 @@ groups:
   admin:
     - "<red>Admin</red>"
     - "<white><PLAYER></white>"
+
+# ==========================================
+# 🏰 SPAWN-AREA NAMETAGS (new in 1.7.0)
+# ==========================================
+# While a player stands within "radius" blocks of the world's spawn point,
+# the plugin shows the "inspawn" nametag INSTEAD of the normal one.
+# Delete the whole "inspawn:" section (or set radius: 0) to disable.
+#
+# Everything from above works here too: <PLAYER>, <HEALTH>, %placeholderapi%,
+# MiniMessage tags, and per-group overrides via "groups:".
+#
+# Extra tags (require Paper 1.21.9+):
+#   <head>                  -> head of the player (or of the pet's owner)
+#   <head:PlayerName>       -> head of any player by name
+#   <head:uuid>             -> head by UUID
+#   <sprite:blocks:block/stone>                    -> atlas sprite icon
+#   <sprite:"minecraft:items":item/diamond_helmet> -> sprite from a named atlas
+inspawn:
+  radius: 16
+  default_format:
+    - "<gradient:red:gold>WELCOME TO SPAWN</gradient>"
+    - "<white><PLAYER></white>"
+  groups:
+    admin:
+      - "<gold>[SPAWN]</gold> <red>Admin</red> <white><PLAYER></white>"

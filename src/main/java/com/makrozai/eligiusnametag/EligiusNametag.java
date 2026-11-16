@@ -4,6 +4,7 @@ import com.makrozai.eligiusnametag.adapter.config.YamlConfigAdapter;
 import com.makrozai.eligiusnametag.adapter.database.DatabaseAdapter;
 import com.makrozai.eligiusnametag.adapter.network.RedisAdapter;
 import com.makrozai.eligiusnametag.adapter.platform.PaperPlatformAdapter;
+import com.makrozai.eligiusnametag.adapter.platform.TagParser;
 import com.makrozai.eligiusnametag.adapter.renderer.BukkitNametagRenderer;
 import com.makrozai.eligiusnametag.domain.port.DatabasePort;
 import com.makrozai.eligiusnametag.domain.port.NametagRendererPort;
@@ -96,6 +97,11 @@ public class EligiusNametag extends JavaPlugin implements Listener {
         StartupLogger.printStep("Initializing services...");
         renderer = new BukkitNametagRenderer(this, configAdapter.getLineSpacing());
         nametagService = new NametagService(configAdapter, platform, renderer, database, syncPort);
+
+        StartupLogger.printStep("Object components [<head>/<sprite>]: "
+                + (TagParser.supportsObjectComponents()
+                        ? "available (Paper 1.21.9+)"
+                        : "unavailable (needs Paper 1.21.9+) - tags will be ignored"));
 
         // Register Command
         if (!getServer().getClass().getName().contains("Mock")) {

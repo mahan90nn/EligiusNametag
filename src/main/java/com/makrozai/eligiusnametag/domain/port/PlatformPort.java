@@ -20,4 +20,11 @@ public interface PlatformPort {
     String getPrimaryGroup(UUID targetId);
     String getOwnerPrimaryGroup(UUID targetId);
     boolean hasPermission(UUID targetId, String permission);
+
+    /**
+     * True when the target is a player standing within {@code radius} blocks of the
+     * spawn point of the world they are currently in. Non-player targets are never
+     * considered "in spawn".
+     */
+    boolean isInSpawn(UUID targetId, double radius);
 }

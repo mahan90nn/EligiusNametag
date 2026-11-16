@@ -93,6 +93,24 @@ public class YamlConfigAdapter implements ConfigPort {
         return getTemplateAsList(petsConfig, "default_format");
     }
 
+    @Override
+    public java.util.List<String> getSpawnNametagTemplate(String group) {
+        if (group != null && playersConfig.contains("inspawn.groups." + group)) {
+            return getTemplateAsList(playersConfig, "inspawn.groups." + group);
+        }
+        return getTemplateAsList(playersConfig, "inspawn.default_format");
+    }
+
+    @Override
+    public double getSpawnRadius() {
+        return playersConfig.getDouble("inspawn.radius", 16.0);
+    }
+
+    @Override
+    public boolean hasSpawnNametagConfig() {
+        return playersConfig.contains("inspawn.default_format") || playersConfig.contains("inspawn.groups");
+    }
+
     /**
      * Reads a config path that can be either a String (legacy \n format)
      * or a List of Strings (new YAML list format). Returns a unified List<String>.

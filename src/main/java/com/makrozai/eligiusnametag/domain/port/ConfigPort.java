@@ -6,6 +6,18 @@ import java.util.List;
 public interface ConfigPort {
     List<String> getPlayerNametagTemplate(String group);
     List<String> getTamedMobNametagTemplate(String group);
+
+    /**
+     * Nametag template shown while the player stands inside the world spawn area
+     * (players.yml "inspawn" section). Empty list = no spawn template (fall back to normal).
+     */
+    List<String> getSpawnNametagTemplate(String group);
+
+    /** Radius in blocks around the world spawn point for the "inspawn" section (0 disables). */
+    double getSpawnRadius();
+
+    /** True when players.yml declares any "inspawn" template (section used at all). */
+    boolean hasSpawnNametagConfig();
     boolean isTamedMobsEnabled();
     boolean isTamedMobsShowUnnamed();
     int getViewDistance();

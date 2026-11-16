@@ -128,7 +128,18 @@ public class NametagService {
 
         if (!validViewers.isEmpty()) {
             String group = isPlayer ? platform.getPrimaryGroup(targetId) : platform.getOwnerPrimaryGroup(targetId);
-            List<String> template = isPlayer ? config.getPlayerNametagTemplate(group) : config.getTamedMobNametagTemplate(group);
+            // Spawn-area override: a player standing near the world spawn point gets the
+            // "inspawn" template from players.yml instead of their normal one.
+            List<String> template = null;
+            if (isPlayer && config.hasSpawnNametagConfig()) {
+                double spawnRadius = config.getSpawnRadius();
+                if (spawnRadius > 0 && platform.isInSpawn(targetId, spawnRadius)) {
+                    template = config.getSpawnNametagTemplate(group);
+                }
+            }
+            if (template == null || template.isEmpty()) {
+                template = isPlayer ? config.getPlayerNametagTemplate(group) : config.getTamedMobNametagTemplate(group);
+            }
             if (template == null || template.isEmpty()) {
                 renderer.hideNametag(targetId, validViewers);
             } else {

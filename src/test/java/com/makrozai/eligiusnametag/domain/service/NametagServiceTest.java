@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -172,5 +173,72 @@ public class NametagServiceTest {
         verify(rendererPort, atLeastOnce()).hideNametag(
                 eq(target), argThat(v -> v != null && v.contains(viewer)));
         verify(rendererPort, never()).renderNametag(eq(target), anyList(), anyList(), anyFloat());
+    }
+
+    @Test
+    public void testSpawnTemplate_UsedWhenPlayerInSpawn() {
+        UUID target = UUID.randomUUID();
+        UUID viewer = UUID.randomUUID();
+
+        when(configPort.hasSpawnNametagConfig()).thenReturn(true);
+        when(configPort.getSpawnRadius()).thenReturn(16.0);
+        when(platformPort.isInSpawn(target, 16.0)).thenReturn(true);
+        when(configPort.getSpawnNametagTemplate("default")).thenReturn(Collections.singletonList("SPAWN"));
+        when(platformPort.getOnlinePlayers()).thenReturn(Arrays.asList(target, viewer));
+
+        nametagService.updateAllNametags();
+
+        // The inspawn template must be parsed for the target, never the normal one.
+        verify(platformPort, atLeastOnce()).parsePlaceholders(eq(target), eq("SPAWN"));
+        verify(platformPort, never()).parsePlaceholders(eq(target), eq("Test"));
+    }
+
+    @Test
+    public void testSpawnTemplate_FallsBackToNormalOutsideSpawn() {
+        UUID target = UUID.randomUUID();
+        UUID viewer = UUID.randomUUID();
+
+        when(configPort.hasSpawnNametagConfig()).thenReturn(true);
+        when(configPort.getSpawnRadius()).thenReturn(16.0);
+        when(platformPort.isInSpawn(target, 16.0)).thenReturn(false);
+        when(platformPort.getOnlinePlayers()).thenReturn(Arrays.asList(target, viewer));
+
+        nametagService.updateAllNametags();
+
+        verify(platformPort, atLeastOnce()).parsePlaceholders(eq(target), eq("Test"));
+        verify(platformPort, never()).parsePlaceholders(eq(target), eq("SPAWN"));
+    }
+
+    @Test
+    public void testSpawnTemplate_SkippedWhenSectionMissing() {
+        UUID target = UUID.randomUUID();
+        UUID viewer = UUID.randomUUID();
+
+        // hasSpawnNametagConfig() defaults to false (Mockito) — no distance checks at all.
+        when(platformPort.getOnlinePlayers()).thenReturn(Arrays.asList(target, viewer));
+
+        nametagService.updateAllNametags();
+
+        verify(platformPort, never()).isInSpawn(any(), anyDouble());
+        verify(configPort, never()).getSpawnNametagTemplate(anyString());
+        verify(platformPort, atLeastOnce()).parsePlaceholders(eq(target), eq("Test"));
+    }
+
+    @Test
+    public void testSpawnTemplate_GroupOverride() {
+        UUID target = UUID.randomUUID();
+        UUID viewer = UUID.randomUUID();
+
+        when(configPort.hasSpawnNametagConfig()).thenReturn(true);
+        when(configPort.getSpawnRadius()).thenReturn(16.0);
+        when(platformPort.isInSpawn(target, 16.0)).thenReturn(true);
+        when(platformPort.getPrimaryGroup(target)).thenReturn("admin");
+        when(configPort.getSpawnNametagTemplate("admin")).thenReturn(Collections.singletonList("SPAWN_ADMIN"));
+        when(platformPort.getOnlinePlayers()).thenReturn(Arrays.asList(target, viewer));
+
+        nametagService.updateAllNametags();
+
+        verify(platformPort, atLeastOnce()).parsePlaceholders(eq(target), eq("SPAWN_ADMIN"));
+        verify(platformPort, never()).parsePlaceholders(eq(target), eq("Test"));
     }
 }

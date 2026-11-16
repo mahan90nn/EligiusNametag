@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/mahan90nn/EligiusNametag/releases/tag/v1.7.0) (2026-11-16)
+
+
+### Features
+
+* **nametag:** add `<head>` and `<sprite>` object component tags (Paper 1.21.9+ / adventure 4.25+). A bare `<head>` resolves to the nametag's own player (or the pet's owner); unknown runtimes strip the tags gracefully instead of showing raw text.
+* **players.yml:** new `inspawn:` section (`radius`, `default_format`, `groups`) — shows a dedicated nametag while the player stands within `radius` blocks of the world spawn point, switching back automatically when they leave.
+
+
+### Dependencies
+
+* adventure-api / minimessage / legacy-serializer bumped from 4.17.0 to 4.25.0.
+
 ## [1.6.1](https://github.com/Eligiusmc/EligiusNametag/compare/v1.6.0...v1.6.1) (2026-11-02)
 
 

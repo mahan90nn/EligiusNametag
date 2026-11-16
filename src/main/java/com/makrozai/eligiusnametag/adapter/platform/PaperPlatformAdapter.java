@@ -161,13 +161,52 @@ public class PaperPlatformAdapter implements PlatformPort {
         }
     }
 
+    @Override
+    public boolean isInSpawn(UUID targetId, double radius) {
+        if (radius <= 0) return false;
+        org.bukkit.entity.Entity entity = Bukkit.getEntity(targetId);
+        if (!(entity instanceof Player)) return false;
+        org.bukkit.Location spawn = entity.getWorld().getSpawnLocation();
+        if (spawn == null) return false;
+        return entity.getLocation().distanceSquared(spawn) <= radius * radius;
+    }
+
+    /**
+     * Resolves the name a bare {@code <head>} tag refers to for a target: the player's
+     * own name, or the pet owner's name. Owner resolution is layered: online player
+     * first (Paper 1.21.9+ no longer auto-resolves entity owner profiles, so the
+     * profile name can be null even when the owner is online), then the profile/cache
+     * name carried by the pet's owner placeholder. Unknown owner = null, which makes
+     * MiniMessage render its viewer-style bare {@code <head>} instead of raw text.
+     */
+    static String resolveSelfHeadName(org.bukkit.entity.Entity target, String ownerName) {
+        if (target instanceof Player) {
+            return ((Player) target).getName();
+        }
+        if (target instanceof Tameable) {
+            Tameable t = (Tameable) target;
+            if (t.getOwner() != null && t.getOwner().getUniqueId() != null) {
+                Player ownerOnline = Bukkit.getPlayer(t.getOwner().getUniqueId());
+                if (ownerOnline != null) {
+                    return ownerOnline.getName();
+                }
+                if (ownerName != null && !"Owner".equals(ownerName)) {
+                    return ownerName;
+                }
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     public net.kyori.adventure.text.Component parsePlaceholders(UUID targetId, String text) {
         org.bukkit.entity.Entity target = Bukkit.getEntity(targetId);
         String parsed = text;
         org.bukkit.OfflinePlayer op = null;
-        
+        // Pet-owner name; also feeds the bare <head> resolution at the end.
+        String ownerName = null;
+
         if (target instanceof Player) {
             Player p = (Player) target;
             op = p;
@@ -185,7 +224,7 @@ public class PaperPlatformAdapter implements PlatformPort {
         } else if (target instanceof Tameable) {
             Tameable t = (Tameable) target;
             String mobName = t.getCustomName() != null ? t.getCustomName() : t.getType().name();
-            String ownerName = t.getOwner() != null ? t.getOwner().getName() : "Owner";
+            ownerName = t.getOwner() != null ? t.getOwner().getName() : "Owner";
             if (t.getOwner() != null && t.getOwner().getUniqueId() != null) {
                 op = Bukkit.getOfflinePlayer(t.getOwner().getUniqueId());
                 if (ownerName == null) {
@@ -275,7 +314,7 @@ public class PaperPlatformAdapter implements PlatformPort {
                            .replace("&n", "<underlined>").replace("&o", "<italic>").replace("&r", "<reset>");
         }
         
-        return net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(parsed);
+        return TagParser.parse(parsed, resolveSelfHeadName(target, ownerName));
     }
 
     @Override
