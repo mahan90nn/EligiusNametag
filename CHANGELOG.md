@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.1](https://github.com/mahan90nn/EligiusNametag/releases/tag/v1.7.1) (2026-11-17)
+
+
+### Features
+
+* **nametag:** `<head:BASE64>` and texture-hash heads — a head tag argument that is a base64 texture value (the "Value" field from head sites / `/give`) or a 64-char textures.minecraft.net hash now renders as a player head with that skin; the optional `:false` hat-layer suffix works too.
+* **players.yml:** the spawn-area section now accepts `in-spawn:`, `in_spawn:` and `inspawn:` spellings, plus a simple statement form (`in-spawn:` followed directly by a list of lines) in addition to the structured `radius`/`default_format`/`groups` form.
+
+
 ## [1.7.0](https://github.com/mahan90nn/EligiusNametag/releases/tag/v1.7.0) (2026-11-16)
 
 

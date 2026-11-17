@@ -93,22 +93,90 @@ public class YamlConfigAdapter implements ConfigPort {
         return getTemplateAsList(petsConfig, "default_format");
     }
 
+    /** Accepted spellings of the spawn-area section, checked in this order. */
+    private static final java.util.List<String> SPAWN_KEYS = java.util.List.of("in-spawn", "in_spawn", "inspawn");
+
+    /**
+     * Spawn-area nametag template (players.yml). Supported shapes per key:
+     * <pre>
+     * in-spawn:                        # simple statement — one format for everyone
+     *   - "&lt;gold&gt;WELCOME TO SPAWN&lt;/gold&gt;"
+     *   - "&lt;white&gt;&lt;PLAYER&gt;&lt;/white&gt;"
+     *
+     * in-spawn:                        # structured form — radius + per-group overrides
+     *   radius: 16
+     *   default_format: [...]
+     *   groups:
+     *     admin: [...]
+     * </pre>
+     * Group overrides beat the default format; the plain list is only used when the
+     * key holds no default_format/groups. A single legacy String value is treated as
+     * one line.
+     */
+    static java.util.List<String> spawnNametagTemplate(FileConfiguration players, String group) {
+        for (String key : SPAWN_KEYS) {
+            if (group != null && players.contains(key + ".groups." + group)) {
+                return spawnTemplateAsList(players, key + ".groups." + group);
+            }
+            if (players.contains(key + ".default_format")) {
+                return spawnTemplateAsList(players, key + ".default_format");
+            }
+        }
+        for (String key : SPAWN_KEYS) {
+            if (players.contains(key)) {
+                return spawnTemplateAsList(players, key);
+            }
+        }
+        return new java.util.ArrayList<>();
+    }
+
+    /** Radius in blocks around the world spawn point; 0 disables the feature. */
+    static double spawnRadius(FileConfiguration players) {
+        for (String key : SPAWN_KEYS) {
+            if (players.contains(key + ".radius")) {
+                return players.getDouble(key + ".radius", 16.0);
+            }
+        }
+        return 16.0;
+    }
+
+    /** True when any spelling of the spawn section is configured. */
+    static boolean hasSpawnNametagConfig(FileConfiguration players) {
+        for (String key : SPAWN_KEYS) {
+            if (players.contains(key + ".default_format")
+                    || players.contains(key + ".groups")
+                    || players.contains(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static java.util.List<String> spawnTemplateAsList(FileConfiguration cfg, String path) {
+        if (!cfg.contains(path)) {
+            return java.util.Collections.emptyList();
+        }
+        if (cfg.isList(path)) {
+            return cfg.getStringList(path);
+        }
+        String value = cfg.getString(path, "");
+        if (value.isEmpty()) return java.util.Collections.emptyList();
+        return java.util.Arrays.asList(value.split("\\\\n|\\n"));
+    }
+
     @Override
     public java.util.List<String> getSpawnNametagTemplate(String group) {
-        if (group != null && playersConfig.contains("inspawn.groups." + group)) {
-            return getTemplateAsList(playersConfig, "inspawn.groups." + group);
-        }
-        return getTemplateAsList(playersConfig, "inspawn.default_format");
+        return spawnNametagTemplate(playersConfig, group);
     }
 
     @Override
     public double getSpawnRadius() {
-        return playersConfig.getDouble("inspawn.radius", 16.0);
+        return spawnRadius(playersConfig);
     }
 
     @Override
     public boolean hasSpawnNametagConfig() {
-        return playersConfig.contains("inspawn.default_format") || playersConfig.contains("inspawn.groups");
+        return hasSpawnNametagConfig(playersConfig);
     }
 
     /**

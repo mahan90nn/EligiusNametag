@@ -62,12 +62,14 @@ Avoid making Nametags more than 3 lines long for regular players. Excessive line
 
 ---
 
-## 🏰 Spawn-Area Nametags (`inspawn`) — new in 1.7.0
+## 🏰 Spawn-Area Nametags (`in-spawn`) — new in 1.7.0
 
-Add an `inspawn:` section to `players.yml` and every player standing within `radius` blocks of the **world spawn point** automatically gets this nametag instead of their normal one. The moment they walk away, their regular tag comes back — the check runs every render tick, no commands needed.
+Add an `in-spawn:` section to `players.yml` and every player standing within `radius` blocks of the **world spawn point** automatically gets this nametag instead of their normal one. The moment they walk away, their regular tag comes back — the check runs every render tick, no commands needed. (`in-spawn:`, `in_spawn:` and `inspawn:` are all accepted spellings.)
+
+Structured form with a radius and per-group overrides:
 
 ```yaml
-inspawn:
+in-spawn:
   radius: 16
   default_format:
     - "<gradient:red:gold>WELCOME TO SPAWN</gradient>"
@@ -75,6 +77,14 @@ inspawn:
   groups:
     admin:
       - "<gold>[SPAWN]</gold> <red>Admin</red> <white><PLAYER></white>"
+```
+
+Simple statement form — one nametag for everyone (radius defaults to 16):
+
+```yaml
+in-spawn:
+  - "<gradient:red:gold>WELCOME TO SPAWN</gradient>"
+  - "<white><PLAYER></white>"
 ```
 
 * `radius` — distance in blocks around the world spawn point (default `16`).
@@ -98,6 +108,8 @@ On **Paper / Folia 1.21.9+** (Minecraft's *object text components*, adventure 4.
 | `<head:PlayerName>` | Head of any player by name |
 | `<head:069a79f4-44e9-4726-a5be-fca90e38aaf5>` | Head by UUID |
 | `<head:PlayerName:false>` | Head with the hat layer disabled |
+| `<head:eyJ0ZXh0dXJlcyI6...>` | Head from a **base64 texture value** (the "Value" field from head sites / `/give`) — new in 1.7.1 |
+| `<head:<64-char-texture-hash>>` | Head from a textures.minecraft.net texture hash — new in 1.7.1 |
 | `<sprite:blocks:block/stone>` | Atlas sprite, atlas without namespace |
 | `<sprite:"minecraft:items":item/diamond_helmet>` | Sprite from a named atlas — quote it, because the atlas id contains `:` |
 

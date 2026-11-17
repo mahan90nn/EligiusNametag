@@ -12,19 +12,31 @@ groups:
 # 🏰 SPAWN-AREA NAMETAGS (new in 1.7.0)
 # ==========================================
 # While a player stands within "radius" blocks of the world's spawn point,
-# the plugin shows the "inspawn" nametag INSTEAD of the normal one.
-# Delete the whole "inspawn:" section (or set radius: 0) to disable.
+# the plugin shows the "in-spawn" nametag INSTEAD of the normal one.
+# Delete the whole "in-spawn:" section (or set radius: 0) to disable.
+#
+# "in-spawn:" (with the dash), "in_spawn:" and "inspawn:" all work.
+# Simple form — one nametag for everyone:
+#   in-spawn:
+#     - "<gradient:red:gold>WELCOME TO SPAWN</gradient>"
+#     - "<white><PLAYER></white>"
+#
+# Structured form — radius + per-group overrides (used below):
 #
 # Everything from above works here too: <PLAYER>, <HEALTH>, %placeholderapi%,
-# MiniMessage tags, and per-group overrides via "groups:".
+# MiniMessage tags, and groups.
 #
 # Extra tags (require Paper 1.21.9+):
 #   <head>                  -> head of the player (or of the pet's owner)
 #   <head:PlayerName>       -> head of any player by name
 #   <head:uuid>             -> head by UUID
+#   <head:eyJ0ZXh0dXJlcyI6...>  -> head from a base64 texture value
+#                                  (the "Value" field from head sites / /give)
+#   <head:<64-char-texture-hash>> -> head from a textures.minecraft.net hash
+#   <head:VALUE:false>      -> head with the hat layer off
 #   <sprite:blocks:block/stone>                    -> atlas sprite icon
 #   <sprite:"minecraft:items":item/diamond_helmet> -> sprite from a named atlas
-inspawn:
+in-spawn:
   radius: 16
   default_format:
     - "<gradient:red:gold>WELCOME TO SPAWN</gradient>"
