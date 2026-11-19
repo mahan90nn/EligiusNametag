@@ -21,6 +21,10 @@ public interface ConfigPort {
     boolean isTamedMobsEnabled();
     boolean isTamedMobsShowUnnamed();
     int getViewDistance();
+
+    /** True when a sneaking player's nametag should be hidden for all viewers (vanilla-like). Default: false. */
+    boolean sneakHidesNametag();
+
     double getLineSpacing();
     double getYOffset();
     double getInterval();

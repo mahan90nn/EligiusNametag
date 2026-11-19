@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.7.2](https://github.com/mahan90nn/EligiusNametag/releases/tag/v1.7.2) (2026-11-19)
+
+
+### Bug Fixes
+
+* **nametag no longer disappears when sneaking (the shift bug).** Root cause: the plugin deliberately hid a player's nametag from all viewers while they sneaked (vanilla-like), which hid the tag on every shift press and brought it back on release. Hiding on sneak is now opt-in via `config.yml` `sneak-hides-nametag: false` (default keeps the tag visible).
+* **nametag no longer sinks into the player while sneaking.** With the tag visible during sneak, a sneaking player's passenger mount point drops 0.3 blocks (pose height 1.8 → 1.5, measured on Paper 1.21.11 via entity NBT), which pushed the mounted TextDisplay into the player model. The renderer now lifts the display transformation by 0.3 while the target sneaks — verified live: the rendered height (entity position + translation) is identical standing and sneaking.
+* **renderer:** a nametag line the client encoder rejects (e.g. a malformed head value) no longer kills the whole render task — which left *every* nametag missing until relog. The failure is contained to that line and logged with its root cause instead.
+
+
 ## [1.7.1](https://github.com/mahan90nn/EligiusNametag/releases/tag/v1.7.1) (2026-11-17)
 
 

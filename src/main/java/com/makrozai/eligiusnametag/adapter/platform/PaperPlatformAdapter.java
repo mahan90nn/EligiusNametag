@@ -135,9 +135,18 @@ public class PaperPlatformAdapter implements PlatformPort {
     public boolean isGloballyHidden(UUID targetId) {
         Player target = Bukkit.getPlayer(targetId);
         if (target != null) {
-            return target.isSneaking() || target.hasPotionEffect(PotionEffectType.INVISIBILITY) || target.isInvisible();
+            // Sneak is handled separately (see NametagService + sneak-hides-nametag):
+            // hiding the tag on sneak is opt-in, and while the tag is shown the renderer
+            // compensates the 0.3-block passenger drop instead.
+            return target.hasPotionEffect(PotionEffectType.INVISIBILITY) || target.isInvisible();
         }
         return false;
+    }
+
+    @Override
+    public boolean isSneaking(UUID targetId) {
+        Player player = Bukkit.getPlayer(targetId);
+        return player != null && player.isSneaking();
     }
 
     @Override

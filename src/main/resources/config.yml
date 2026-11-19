@@ -9,6 +9,10 @@ check_updates: true
 # Max distance in blocks at which nametags are visible
 view_distance: 64
 
+# Hide a player's nametag while they sneak (vanilla-like behavior).
+# Default false: the nametag stays visible and is height-compensated while sneaking.
+sneak-hides-nametag: false
+
 # Vertical spacing between hologram lines
 line_spacing: 0.275
 

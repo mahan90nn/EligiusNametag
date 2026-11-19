@@ -17,6 +17,15 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class BukkitNametagRenderer implements NametagRendererPort {
+    /**
+     * A sneaking player's passenger mount point drops 0.3 blocks (pose height
+     * 1.8 -> 1.5, measured on Paper 1.21.11 via entity NBT), which sinks mounted
+     * nametag displays into the player model — the text gets occluded and "vanishes"
+     * while sneaking. Lifting the display transformation by the same amount while
+     * sneaking keeps the *rendered* nametag (entity position + translation) in place.
+     */
+    private static final float SNEAK_HEIGHT_COMPENSATION = 0.3f;
+
     private final Plugin plugin;
     private final double lineSpacing;
     
@@ -66,9 +75,11 @@ public class BukkitNametagRenderer implements NametagRendererPort {
         });
 
         // 1. Spawn missing lines
+        final boolean sneaking = isTargetSneaking(target);
         while (displays.size() < lines.size()) {
             final int lineIndex = displays.size();
-            final float spawnYOffset = yOffset + ((lines.size() - 1 - lineIndex) * (float) lineSpacing);
+            final float spawnYOffset = yOffset + ((lines.size() - 1 - lineIndex) * (float) lineSpacing)
+                    + (sneaking ? SNEAK_HEIGHT_COMPENSATION : 0f);
             final Component initialText = lines.get(lineIndex);
             Location spawnLoc = target.getLocation().add(0, target.getBoundingBox().getHeight(), 0);
             TextDisplay display = target.getWorld().spawn(spawnLoc, TextDisplay.class, entity -> {
@@ -96,6 +107,9 @@ public class BukkitNametagRenderer implements NametagRendererPort {
                     entity.text(initialText);
                 } catch (NoSuchMethodError e) {
                     entity.setText(serializeLegacy(initialText));
+                } catch (Throwable t) {
+                    plugin.getLogger().warning("Failed to encode initial nametag line for "
+                            + target.getName() + ": " + rootMessage(t));
                 }
             });
             displays.add(display);
@@ -131,8 +145,11 @@ public class BukkitNametagRenderer implements NametagRendererPort {
                 target.addPassenger(display);
             }
 
-            // Set translation (yOffset)
-            float calculatedYOffset = yOffset + ((lines.size() - 1 - i) * (float) lineSpacing);
+            // Set translation (yOffset) — lifted while the target sneaks so the
+            // tag does not sink into the player model (see SNEAK_HEIGHT_COMPENSATION)
+            boolean sneakingNow = isTargetSneaking(target);
+            float calculatedYOffset = yOffset + ((lines.size() - 1 - i) * (float) lineSpacing)
+                    + (sneakingNow ? SNEAK_HEIGHT_COMPENSATION : 0f);
             Vector3f offset = new Vector3f(0f, calculatedYOffset, 0f);
             
             Transformation currentTransform = display.getTransformation();
@@ -146,13 +163,18 @@ public class BukkitNametagRenderer implements NametagRendererPort {
                 display.setTransformation(newTransform);
             }
 
-            // Update text if changed
+            // Update text if changed. A component the client encoder rejects (e.g. a
+            // malformed head value) must not kill the whole render task — that would
+            // leave EVERY nametag missing; contain the failure to this line and log it.
             Component lastComp = lineJsonCache.get(displayId);
             if (!lineComp.equals(lastComp)) {
                 try {
                     display.text(lineComp);
                 } catch (NoSuchMethodError e) {
                     display.setText(serializeLegacy(lineComp));
+                } catch (Throwable t) {
+                    plugin.getLogger().warning("Failed to encode nametag line for "
+                            + target.getName() + " (line " + (i + 1) + "): " + rootMessage(t));
                 }
                 lineJsonCache.put(displayId, lineComp);
             }
@@ -312,5 +334,25 @@ public class BukkitNametagRenderer implements NametagRendererPort {
                 .useUnusualXRepeatedCharacterHexFormat()
                 .build()
                 .serialize(component);
+    }
+
+    /** Last human-readable cause of a chained runtime exception ("Player name contained..."). */
+    private static String rootMessage(Throwable t) {
+        Throwable cause = t;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        String msg = cause.getMessage();
+        return msg == null ? cause.getClass().getSimpleName() : msg;
+    }
+
+    /**
+     * True when the target is sneaking, polled live from the entity flag. The render
+     * loop runs for sneaking players now (sneak no longer hides the tag by default),
+     * so the flag is always fresh here; the 0.3-block passenger drop it causes is
+     * compensated by SNEAK_HEIGHT_COMPENSATION.
+     */
+    private boolean isTargetSneaking(Entity target) {
+        return target instanceof Player p && p.isSneaking();
     }
 }

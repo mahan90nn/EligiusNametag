@@ -212,6 +212,11 @@ public class YamlConfigAdapter implements ConfigPort {
     }
 
     @Override
+    public boolean sneakHidesNametag() {
+        return config.getBoolean("sneak-hides-nametag", false);
+    }
+
+    @Override
     public double getLineSpacing() {
         return config.getDouble("line_spacing", 0.275);
     }

@@ -97,7 +97,12 @@ public class NametagService {
     }
 
     private void updateTarget(UUID targetId, List<UUID> potentialViewers, boolean isPlayer, double maxDistanceSquared) {
-        boolean isHidden = platform.isGloballyHidden(targetId);
+        // Sneak no longer hides the nametag by default: hiding it made the tag vanish
+        // on every shift press (and the render loop skipping the player is also what
+        // let the 0.3-block passenger drop go uncompensated). Opt back in via
+        // config.yml "sneak-hides-nametag: true".
+        boolean isHidden = platform.isGloballyHidden(targetId)
+                || (isPlayer && config.sneakHidesNametag() && platform.isSneaking(targetId));
 
         if (!isPlayer) {
             if (!config.isTamedMobsEnabled() || (!config.isTamedMobsShowUnnamed() && !platform.hasCustomName(targetId))) {

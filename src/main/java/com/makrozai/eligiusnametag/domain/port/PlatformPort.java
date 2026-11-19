@@ -14,6 +14,8 @@ public interface PlatformPort {
     boolean isSameWorld(UUID a, UUID b);
     double getDistanceSquared(UUID a, UUID b);
     boolean isGloballyHidden(UUID targetId);
+    /** True when the target player is sneaking (used for nametag height compensation). */
+    boolean isSneaking(UUID targetId);
     boolean hasCustomName(UUID targetId);
     void disableVanillaNametag(UUID targetId);
     net.kyori.adventure.text.Component parsePlaceholders(UUID targetId, String text);
